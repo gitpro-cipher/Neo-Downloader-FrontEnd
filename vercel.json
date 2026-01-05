@@ -1,8 +1,14 @@
+```json
 {
     "rewrites": [
+        {
+            "source": "/api/:path*",
+            "destination": "https://neo-downloader-backend.onrender.com/api/:path*"
+        },
         {
             "source": "/(.*)",
             "destination": "/index.html"
         }
     ]
 }
+```

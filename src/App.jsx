@@ -112,19 +112,27 @@ function App() {
     setServerStatus({ type: 'info', text: 'Pinging...' });
     const start = Date.now();
     try {
-      // FORCE PRODUCTION URL if env is missing, to avoid localhost issues
-      const API_BASE = import.meta.env.VITE_API_URL || 'https://neo-downloader-backend.onrender.com';
-      console.log("Pinging API:", API_BASE);
+      // Use relative path to leverage Vercel Proxy (bypasses CORS)
+      // Local dev needs vite.config.js proxy or fallback
+      const API_BASE = import.meta.env.VITE_API_URL || '';
+      console.log("Pinging API:", API_BASE || '/api (relative)');
 
       await axios.get(`${API_BASE}/api/health`);
       const latency = Date.now() - start;
-      setServerStatus({ type: 'success', text: `Abstract Connected (${latency}ms)` });
+      setServerStatus({ type: 'success', text: `Connected via Proxy (${latency}ms)` });
 
       // Auto-clear after 3s
       setTimeout(() => setServerStatus(null), 5000);
     } catch (err) {
       console.error("Ping Failed:", err);
-      setServerStatus({ type: 'danger', text: 'Server Offline / CORS Block' });
+      // Fallback to direct connection if proxy fails
+      try {
+        const DIRECT_URL = 'https://neo-downloader-backend.onrender.com';
+        await axios.get(`${DIRECT_URL}/api/health`);
+        setServerStatus({ type: 'success', text: 'Connected Direct' });
+      } catch (e) {
+        setServerStatus({ type: 'danger', text: 'Server Offline' });
+      }
     }
   };
 
@@ -132,11 +140,18 @@ function App() {
     setUpdatingServer(true);
     setServerStatus({ type: 'warning', text: 'Updating Backend Engine...' });
     try {
-      const API_BASE = import.meta.env.VITE_API_URL || 'https://neo-downloader-backend.onrender.com';
-      const res = await axios.post(`${API_BASE}/api/update`);
-      setServerStatus({ type: 'success', text: 'Update Complete! Try Downloading.' });
+      // Try relative first (Proxy)
+      const API_BASE = import.meta.env.VITE_API_URL || '';
+      await axios.post(`${API_BASE}/api/update`);
+      setServerStatus({ type: 'success', text: 'Update Complete!' });
     } catch (err) {
-      setServerStatus({ type: 'danger', text: 'Update Failed' });
+      // Retry Direct
+      try {
+        await axios.post('https://neo-downloader-backend.onrender.com/api/update');
+        setServerStatus({ type: 'success', text: 'Update Complete (Direct)!' });
+      } catch (e) {
+        setServerStatus({ type: 'danger', text: 'Update Failed' });
+      }
     } finally {
       setUpdatingServer(false);
     }
