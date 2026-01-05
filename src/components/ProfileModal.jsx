@@ -1,8 +1,27 @@
-import React from 'react';
-import { Modal, Button, Image } from 'react-bootstrap';
+import React, { useState } from 'react';
+import { Modal, Button, Image, Alert } from 'react-bootstrap';
+import axios from 'axios';
 import { FaHistory, FaDownload, FaUserCircle } from 'react-icons/fa';
 
 const ProfileModal = ({ show, onHide, user, history }) => {
+    const [updating, setUpdating] = useState(false);
+    const [msg, setMsg] = useState(null);
+
+    const updateServer = async () => {
+        setUpdating(true);
+        setMsg(null);
+        try {
+            const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+            const res = await axios.post(`${API_BASE}/api/update`);
+            setMsg({ type: 'success', text: `Success: ${res.data.output}` });
+        } catch (err) {
+            setMsg({ type: 'danger', text: 'Update Failed. Check console.' });
+            console.error(err);
+        } finally {
+            setUpdating(false);
+        }
+    };
+
     return (
         <Modal show={show} onHide={onHide} centered contentClassName="glass-panel border-neon-blue bg-dark text-white">
             <Modal.Header closeButton closeVariant="white" className="border-secondary">
@@ -11,6 +30,7 @@ const ProfileModal = ({ show, onHide, user, history }) => {
                 </Modal.Title>
             </Modal.Header>
             <Modal.Body>
+                {msg && <Alert variant={msg.type} onClose={() => setMsg(null)} dismissible className="small">{msg.text}</Alert>}
                 <div className="text-center mb-4">
                     {user?.photoURL ? (
                         <Image src={user.photoURL} roundedCircle style={{ width: '100px', height: '100px', border: '3px solid #00d2ff' }} />
@@ -21,6 +41,15 @@ const ProfileModal = ({ show, onHide, user, history }) => {
                     )}
                     <h4 className="mt-3 text-white">{user?.displayName || 'User'}</h4>
                     <p className="text-secondary">{user?.email}</p>
+                </div>
+
+                <div className="mb-4 text-center">
+                    <Button variant="outline-danger" size="sm" onClick={updateServer} disabled={updating}>
+                        {updating ? 'Updating...' : '⚡ Force Update yt-dlp'}
+                    </Button>
+                    <div className="text-muted small mt-1" style={{ fontSize: '0.75rem' }}>
+                        Use this if downloads start failing due to "Sign in to confirm" errors.
+                    </div>
                 </div>
 
                 <h5 className="text-neon-green mb-3 border-bottom border-secondary pb-2"><FaHistory className="me-2" /> Download History</h5>
