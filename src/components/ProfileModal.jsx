@@ -11,7 +11,7 @@ const ProfileModal = ({ show, onHide, user, history }) => {
         setUpdating(true);
         setMsg(null);
         try {
-            const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+            const API_BASE = import.meta.env.VITE_API_URL || 'https://neo-downloader-backend.onrender.com';
             const res = await axios.post(`${API_BASE}/api/update`);
             setMsg({ type: 'success', text: `Success: ${res.data.output}` });
         } catch (err) {
@@ -26,7 +26,7 @@ const ProfileModal = ({ show, onHide, user, history }) => {
         setMsg(null);
         const start = Date.now();
         try {
-            const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+            const API_BASE = import.meta.env.VITE_API_URL || 'https://neo-downloader-backend.onrender.com';
             await axios.get(`${API_BASE}/api/health`);
             const latency = Date.now() - start;
             setMsg({ type: 'success', text: `Server Online! Latency: ${latency}ms` });
