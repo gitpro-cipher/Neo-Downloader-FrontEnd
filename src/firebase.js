@@ -3,12 +3,12 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 // NeoDownloader Firebase Configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyBu1EeEI9TM9b6lmSDDmCkguVjmn7YnGBc",
-    authDomain: "neo-downloader-13f8b.firebaseapp.com",
-    projectId: "neo-downloader-13f8b",
-    storageBucket: "neo-downloader-13f8b.firebasestorage.app",
-    messagingSenderId: "1095106268936",
-    appId: "1:1095106268936:web:8c5cfebbf25b985429a6bd"
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 // Initialize Firebase
