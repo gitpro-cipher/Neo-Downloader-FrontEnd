@@ -14,6 +14,8 @@ function App() {
   const [videoInfo, setVideoInfo] = useState(null);
   const [error, setError] = useState(null);
   const [downloading, setDownloading] = useState(false);
+  const [serverStatus, setServerStatus] = useState(null); // { type, text }
+  const [updatingServer, setUpdatingServer] = useState(false);
 
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [selectedAudio, setSelectedAudio] = useState(null);
@@ -106,6 +108,40 @@ function App() {
     });
   };
 
+  const pingServer = async () => {
+    setServerStatus({ type: 'info', text: 'Pinging...' });
+    const start = Date.now();
+    try {
+      // FORCE PRODUCTION URL if env is missing, to avoid localhost issues
+      const API_BASE = import.meta.env.VITE_API_URL || 'https://neo-downloader-backend.onrender.com';
+      console.log("Pinging API:", API_BASE);
+
+      await axios.get(`${API_BASE}/api/health`);
+      const latency = Date.now() - start;
+      setServerStatus({ type: 'success', text: `Abstract Connected (${latency}ms)` });
+
+      // Auto-clear after 3s
+      setTimeout(() => setServerStatus(null), 5000);
+    } catch (err) {
+      console.error("Ping Failed:", err);
+      setServerStatus({ type: 'danger', text: 'Server Offline / CORS Block' });
+    }
+  };
+
+  const updateServer = async () => {
+    setUpdatingServer(true);
+    setServerStatus({ type: 'warning', text: 'Updating Backend Engine...' });
+    try {
+      const API_BASE = import.meta.env.VITE_API_URL || 'https://neo-downloader-backend.onrender.com';
+      const res = await axios.post(`${API_BASE}/api/update`);
+      setServerStatus({ type: 'success', text: 'Update Complete! Try Downloading.' });
+    } catch (err) {
+      setServerStatus({ type: 'danger', text: 'Update Failed' });
+    } finally {
+      setUpdatingServer(false);
+    }
+  };
+
   return (
     <div className="app-container">
       <Navbar expand="lg" variant="dark" className="glass-panel mb-4 mx-3 mt-3 px-4 sticky-top">
@@ -157,6 +193,22 @@ function App() {
           <div className="mb-4">
             <h1 className="display-4 fw-bold mb-2 text-white" style={{ textShadow: '0 0 20px rgba(0, 210, 255, 0.4)' }}>Ultimate 8K Video Downloader</h1>
             <p className="text-secondary lead">Supports <FaYoutube className="text-danger mx-1" /> YouTube, <FaVideo className="text-info mx-1" /> Vimeo, <FaVk className="text-primary mx-1" /> VK, and more.</p>
+
+            {/* Server Status Controls */}
+            <div className="d-flex justify-content-center gap-3 mb-4">
+              <Button variant="outline-success" size="sm" onClick={pingServer} className="glass-btn rounded-pill px-3">
+                📡 Check Server Status
+              </Button>
+              <Button variant="outline-danger" size="sm" onClick={updateServer} disabled={updatingServer} className="glass-btn rounded-pill px-3">
+                {updatingServer ? 'Updating...' : '⚡ Force Engine Update'}
+              </Button>
+            </div>
+            {serverStatus && (
+              <Alert variant={serverStatus.type} className="mx-auto" style={{ maxWidth: '400px' }}>
+                {serverStatus.text}
+              </Alert>
+            )}
+
             <div className="d-flex justify-content-center gap-3 mt-3 opacity-75">
               <span className="badge glass-panel text-neon-blue border border-info border-opacity-25 px-3 py-2">8K HDR</span>
               <span className="badge glass-panel text-neon-green border border-success border-opacity-25 px-3 py-2">60 FPS</span>
