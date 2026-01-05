@@ -22,6 +22,19 @@ const ProfileModal = ({ show, onHide, user, history }) => {
         }
     };
 
+    const pingServer = async () => {
+        setMsg(null);
+        const start = Date.now();
+        try {
+            const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+            await axios.get(`${API_BASE}/api/health`);
+            const latency = Date.now() - start;
+            setMsg({ type: 'success', text: `Server Online! Latency: ${latency}ms` });
+        } catch (err) {
+            setMsg({ type: 'danger', text: 'Server Unreachable (Offline)' });
+        }
+    };
+
     return (
         <Modal show={show} onHide={onHide} centered contentClassName="glass-panel border-neon-blue bg-dark text-white">
             <Modal.Header closeButton closeVariant="white" className="border-secondary">
@@ -44,11 +57,16 @@ const ProfileModal = ({ show, onHide, user, history }) => {
                 </div>
 
                 <div className="mb-4 text-center">
-                    <Button variant="outline-danger" size="sm" onClick={updateServer} disabled={updating}>
-                        {updating ? 'Updating...' : '⚡ Force Update yt-dlp'}
-                    </Button>
+                    <div className="d-flex justify-content-center gap-2 mb-2">
+                        <Button variant="outline-success" size="sm" onClick={pingServer}>
+                            📡 Test Connection
+                        </Button>
+                        <Button variant="outline-danger" size="sm" onClick={updateServer} disabled={updating}>
+                            {updating ? 'Updating...' : '⚡ Force Update yt-dlp'}
+                        </Button>
+                    </div>
                     <div className="text-muted small mt-1" style={{ fontSize: '0.75rem' }}>
-                        Use this if downloads start failing due to "Sign in to confirm" errors.
+                        Use "Update" if downloads start failing. Use "Test" to check backend status.
                     </div>
                 </div>
 
