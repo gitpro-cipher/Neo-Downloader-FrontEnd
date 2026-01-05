@@ -55,7 +55,9 @@ function App() {
     setSelectedAudio(null);
 
     try {
-      const res = await axios.post('http://localhost:5000/api/info', { url: targetUrl });
+      // Use prod URL as default or env var
+      const API_BASE = import.meta.env.VITE_API_URL || 'https://neo-downloader-backend.onrender.com';
+      const res = await axios.post(`${API_BASE}/api/info`, { url: targetUrl });
       const data = res.data;
 
       const videoFormats = data.formats.filter(f => f.isVideo).sort((a, b) => (b.height || 0) - (a.height || 0));
@@ -90,7 +92,8 @@ function App() {
     localStorage.setItem('neo_history', JSON.stringify(updatedHistory));
 
     const ext = (selectedVideo && selectedAudio) ? 'mkv' : (selectedVideo.ext || 'mp4');
-    let downloadUrl = `http://localhost:5000/api/download?url=${encodeURIComponent(url)}&video_id=${selectedVideo.format_id}&ext=${ext}&title=${encodeURIComponent(videoInfo.title)}`;
+    const API_BASE = import.meta.env.VITE_API_URL || 'https://neo-downloader-backend.onrender.com';
+    let downloadUrl = `${API_BASE}/api/download?url=${encodeURIComponent(url)}&video_id=${selectedVideo.format_id}&ext=${ext}&title=${encodeURIComponent(videoInfo.title)}`;
     if (selectedAudio) downloadUrl += `&audio_id=${selectedAudio}`;
     window.location.href = downloadUrl;
     setTimeout(() => setDownloading(false), 3000);
