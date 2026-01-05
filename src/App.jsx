@@ -100,8 +100,8 @@ function App() {
   };
 
   const handleLogout = () => {
-    const auth = getAuth();
-    signOut(auth).then(() => {
+    if (!getAuth()) return;
+    signOut(getAuth()).then(() => {
       setUser(null);
     });
   };
