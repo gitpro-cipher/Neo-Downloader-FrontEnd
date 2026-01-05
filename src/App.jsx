@@ -70,7 +70,10 @@ function App() {
 
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.error || 'Failed to fetch video information.');
+      // Show specific error from backend if available (e.g. "Sign in to confirm")
+      const backendError = err.response?.data?.details || err.response?.data?.error;
+      setError(backendError || 'Failed to fetch video information.');
+      setVideoInfo(null);
     } finally {
       setLoading(false);
     }
